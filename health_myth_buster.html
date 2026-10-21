@@ -1,0 +1,487 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Health Myth Buster</title>
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background: #eef7f2;
+  color: #24352d;
+}
+
+.container {
+  max-width: 760px;
+  margin: 20px auto;
+  padding: 25px;
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 5px 24px #173c2815;
+}
+
+header { text-align: center; }
+
+header h1 {
+  color: #147d55;
+  margin-bottom: 8px;
+}
+
+header p { color: #5e7167; line-height: 1.5; }
+
+textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 14px;
+  border: 1px solid #b9cec2;
+  border-radius: 10px;
+  font: inherit;
+  resize: vertical;
+}
+
+button {
+  border: 0;
+  border-radius: 9px;
+  padding: 12px 16px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.primary {
+  width: 100%;
+  margin-top: 12px;
+  background: #16845a;
+  color: white;
+  font-weight: bold;
+}
+
+.secondary {
+  background: #e7f2eb;
+  color: #176443;
+}
+
+button:hover { opacity: 0.88; }
+
+.result {
+  display: none;
+  margin-top: 22px;
+  padding: 18px;
+  border-radius: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.result h2 { margin-top: 0; }
+
+.result p { margin-bottom: 0; }
+
+.true { background: #e4f7e9; border-left: 5px solid #239447; }
+.false { background: #fff0eb; border-left: 5px solid #d65b3d; }
+.context { background: #fff5d9; border-left: 5px solid #d39a13; }
+.unverified { background: #edf1f5; border-left: 5px solid #708195; }
+
+.examples { margin-top: 25px; }
+
+.examples h3 { font-size: 17px; }
+
+.example-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.example-list button {
+  text-align: left;
+  font-size: 13px;
+  max-width: 100%;
+}
+
+.note {
+  margin-top: 22px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #64736a;
+}
+
+@media (max-width: 480px) {
+  body { padding: 10px; }
+  .container { padding: 18px; margin: 5px auto; }
+  header h1 { font-size: 25px; }
+}
+</style>
+</head>
+
+<body>
+<main class="container">
+  <header>
+    <h1>💚 Health Myth Buster</h1>
+    <p>Explore common health claims and learn the facts.</p>
+  </header>
+
+  <label for="myth"><strong>Enter one of the 50 health myths:</strong></label>
+  <textarea id="myth" placeholder="Example: Antibiotics cure viral infections."></textarea>
+
+  <button class="primary" onclick="checkMyth()">Check Statement</button>
+
+  <section id="result" class="result" aria-live="polite"></section>
+
+  <div class="examples">
+    <h3>💡 Try a sample myth</h3>
+    <div id="examples" class="example-list"></div>
+  </div>
+
+  <p class="note">
+    Educational information only. This prototype is not a diagnostic tool
+    and does not replace advice from a qualified healthcare professional.
+    UNVERIFIED means the statement is not an exact match in this app's
+    limited library; it does not necessarily mean the statement is false.
+  </p>
+</main>
+
+<script>
+const myths = [
+  {
+    myth: "Everyone must drink eight glasses of water daily.",
+    verdict: "FALSE",
+    fact: "Water needs vary from person to person."
+  },
+  {
+    myth: "Eating carrots improves eyesight.",
+    verdict: "CONTEXT-DEPENDENT",
+    fact: "Vitamin A supports normal vision, but carrots do not give everyone better eyesight."
+  },
+  {
+    myth: "Antibiotics cure viral infections.",
+    verdict: "FALSE",
+    fact: "Antibiotics treat bacterial infections, not viruses."
+  },
+  {
+    myth: "Too much sugar can cause tooth decay.",
+    verdict: "TRUE",
+    fact: "Frequent sugar exposure increases the risk of cavities."
+  },
+  {
+    myth: "Vaccines help protect people from certain diseases.",
+    verdict: "TRUE",
+    fact: "Vaccines train the immune system to fight specific infections."
+  },
+  {
+    myth: "Drinking cold water causes a cold.",
+    verdict: "FALSE",
+    fact: "Colds are caused by viruses, not cold water."
+  },
+  {
+    myth: "Washing hands helps prevent the spread of germs.",
+    verdict: "TRUE",
+    fact: "Soap and water help remove germs from hands."
+  },
+  {
+    myth: "Take antibiotics whenever you have a fever.",
+    verdict: "FALSE",
+    fact: "Many fevers are not caused by bacterial infections."
+  },
+  {
+    myth: "Eating fruits and vegetables supports good health.",
+    verdict: "TRUE",
+    fact: "They provide important vitamins, minerals and fibre."
+  },
+  {
+    myth: "Going outside with wet hair causes a cold.",
+    verdict: "FALSE",
+    fact: "Colds are caused by viruses."
+  },
+  {
+    myth: "Regular physical activity supports heart health.",
+    verdict: "TRUE",
+    fact: "Physical activity benefits the heart and overall health."
+  },
+  {
+    myth: "All bacteria are harmful to humans.",
+    verdict: "FALSE",
+    fact: "Many bacteria are harmless or beneficial."
+  },
+  {
+    myth: "Enough sleep supports memory and concentration.",
+    verdict: "TRUE",
+    fact: "Sleep supports learning and brain function."
+  },
+  {
+    myth: "Skipping breakfast always causes weight gain.",
+    verdict: "FALSE",
+    fact: "Skipping breakfast does not always cause weight gain."
+  },
+  {
+    myth: "Sunscreen helps protect skin from harmful UV rays.",
+    verdict: "TRUE",
+    fact: "Sunscreen helps reduce UV exposure when used correctly."
+  },
+  {
+    myth: "Lemon water melts body fat.",
+    verdict: "FALSE",
+    fact: "Lemon water does not directly melt body fat."
+  },
+  {
+    myth: "Smoking increases the risk of lung disease.",
+    verdict: "TRUE",
+    fact: "Smoking can cause serious lung diseases."
+  },
+  {
+    myth: "Everyone needs the same amount of sleep.",
+    verdict: "FALSE",
+    fact: "Sleep needs vary with age and individual factors."
+  },
+  {
+    myth: "Too much salt can increase blood pressure.",
+    verdict: "TRUE",
+    fact: "High salt intake contributes to high blood pressure."
+  },
+  {
+    myth: "Natural products are always safe.",
+    verdict: "FALSE",
+    fact: "Natural products can cause side effects or harmful interactions."
+  },
+  {
+    myth: "Brushing teeth twice daily helps prevent tooth decay.",
+    verdict: "TRUE",
+    fact: "Brushing with fluoride toothpaste helps protect teeth."
+  },
+  {
+    myth: "You cannot become dehydrated in cold weather.",
+    verdict: "FALSE",
+    fact: "Dehydration can happen in any season."
+  },
+  {
+    myth: "A balanced diet provides essential nutrients.",
+    verdict: "TRUE",
+    fact: "A varied, balanced diet helps meet nutritional needs."
+  },
+  {
+    myth: "Cracking your knuckles always causes arthritis.",
+    verdict: "FALSE",
+    fact: "Knuckle cracking has not been shown to inevitably cause arthritis."
+  },
+  {
+    myth: "Mosquitoes can spread dengue.",
+    verdict: "TRUE",
+    fact: "Infected Aedes mosquitoes transmit dengue viruses."
+  },
+  {
+    myth: "Eating late at night always causes weight gain.",
+    verdict: "FALSE",
+    fact: "Timing alone does not determine weight gain."
+  },
+  {
+    myth: "Sharing drinking bottles can spread some infections.",
+    verdict: "TRUE",
+    fact: "Some germs can spread through shared bottles."
+  },
+  {
+    myth: "All fats are bad for health.",
+    verdict: "FALSE",
+    fact: "The body needs some fats; the type and amount matter."
+  },
+  {
+    myth: "Handwashing with soap helps remove germs.",
+    verdict: "TRUE",
+    fact: "Proper handwashing removes dirt and many germs."
+  },
+  {
+    myth: "Cold weather alone causes a common cold.",
+    verdict: "FALSE",
+    fact: "A virus causes the common cold."
+  },
+  {
+    myth: "Exercise can improve mood and well-being.",
+    verdict: "TRUE",
+    fact: "Physical activity can benefit mental and physical health."
+  },
+  {
+    myth: "Everyone needs vitamin supplements.",
+    verdict: "FALSE",
+    fact: "Supplements are needed by some people, not everyone."
+  },
+  {
+    myth: "Too much sunlight can damage skin.",
+    verdict: "TRUE",
+    fact: "Excessive UV exposure can damage skin."
+  },
+  {
+    myth: "Milk is the only source of calcium.",
+    verdict: "FALSE",
+    fact: "Calcium is also found in certain leafy greens and fortified foods."
+  },
+  {
+    myth: "Oral rehydration solution helps replace fluids lost through diarrhoea.",
+    verdict: "TRUE",
+    fact: "ORS helps replace water and essential salts."
+  },
+  {
+    myth: "Stop prescribed antibiotics as soon as you feel better.",
+    verdict: "FALSE",
+    fact: "Follow the prescribed instructions and consult your healthcare professional before changing treatment."
+  },
+  {
+    myth: "Good oral hygiene helps keep gums healthy.",
+    verdict: "TRUE",
+    fact: "Brushing and cleaning between teeth help prevent gum disease."
+  },
+  {
+    myth: "Energy drinks are always safe for teenagers.",
+    verdict: "FALSE",
+    fact: "Energy drinks can contain high levels of caffeine and are not recommended for children and teenagers."
+  },
+  {
+    myth: "Contaminated drinking water can cause illness.",
+    verdict: "TRUE",
+    fact: "Contaminated water can carry disease-causing germs or chemicals."
+  },
+  {
+    myth: "All headaches are caused by dehydration.",
+    verdict: "FALSE",
+    fact: "Headaches have many possible causes."
+  },
+  {
+    myth: "Seat belts help reduce injuries in road accidents.",
+    verdict: "TRUE",
+    fact: "Proper seat-belt use reduces the risk of serious injury."
+  },
+  {
+    myth: "You cannot have a sexually transmitted infection without symptoms.",
+    verdict: "FALSE",
+    fact: "Some infections cause no noticeable symptoms."
+  },
+  {
+    myth: "Eating a variety of foods helps provide different nutrients.",
+    verdict: "TRUE",
+    fact: "Different foods supply different nutrients."
+  },
+  {
+    myth: "Herbal remedies never cause side effects.",
+    verdict: "FALSE",
+    fact: "Herbal products can cause side effects and interact with medicines."
+  },
+  {
+    myth: "Regular health check-ups can identify some health problems early.",
+    verdict: "TRUE",
+    fact: "Appropriate screening can detect certain conditions early."
+  },
+  {
+    myth: "Using another person's prescription medicine is safe if symptoms are similar.",
+    verdict: "FALSE",
+    fact: "The medicine may be unsuitable or harmful for you."
+  },
+  {
+    myth: "Coughing or sneezing into your elbow can reduce the spread of germs.",
+    verdict: "TRUE",
+    fact: "Covering coughs and sneezes helps limit the spread of respiratory germs."
+  },
+  {
+    myth: "Everyone with high blood pressure experiences symptoms.",
+    verdict: "FALSE",
+    fact: "High blood pressure often has no noticeable symptoms."
+  },
+  {
+    myth: "Mental health is an important part of overall health.",
+    verdict: "TRUE",
+    fact: "Mental and physical health are both important."
+  },
+  {
+    myth: "A claim is true just because it is popular on social media.",
+    verdict: "FALSE",
+    fact: "Popularity is not scientific evidence."
+  }
+];
+
+function normalize(text) {
+  return text
+    .toLowerCase()
+    .normalize("NFKC")
+    .replace(/[’‘]/g, "'")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+function checkMyth() {
+  const input = document.getElementById("myth").value;
+  const result = document.getElementById("result");
+  const normalizedInput = normalize(input);
+
+  result.style.display = "block";
+
+  if (!normalizedInput) {
+    result.className = "result unverified";
+    result.innerHTML =
+      "<h2>Please enter a statement</h2>" +
+      "<p>Type one of the 50 myths from the example list.</p>";
+    return;
+  }
+
+  // Only the supplied myth statements are recognized.
+  // Punctuation and letter case do not matter.
+  const match = myths.find(item =>
+    normalize(item.myth) === normalizedInput
+  );
+
+  if (!match) {
+    result.className = "result unverified";
+    result.innerHTML =
+      "<h2>🔎 UNVERIFIED</h2>" +
+      "<p>This statement does not exactly match one of the 50 " +
+      "myths in this app. Check reliable medical sources before " +
+      "accepting it as true or false.</p>";
+    return;
+  }
+
+  const verdictClass = {
+    "TRUE": "true",
+    "FALSE": "false",
+    "CONTEXT-DEPENDENT": "context"
+  }[match.verdict];
+
+  result.className = "result " + verdictClass;
+
+  const heading = document.createElement("h2");
+  heading.textContent = match.verdict;
+
+  const mythText = document.createElement("p");
+  const mythLabel = document.createElement("strong");
+  mythLabel.textContent = "Myth: ";
+  mythText.append(mythLabel, document.createTextNode(match.myth));
+
+  const factText = document.createElement("p");
+  const factLabel = document.createElement("strong");
+  factLabel.textContent = "Fact: ";
+  factText.append(factLabel, document.createTextNode(match.fact));
+
+  result.replaceChildren(heading, mythText, factText);
+}
+
+function useExample(index) {
+  document.getElementById("myth").value = myths[index].myth;
+  checkMyth();
+}
+
+const examples = document.getElementById("examples");
+
+[0, 2, 4, 6, 10, 14, 24, 30, 44, 48].forEach(index => {
+  const button = document.createElement("button");
+  button.className = "secondary";
+  button.textContent = myths[index].myth;
+  button.addEventListener("click", () => useExample(index));
+  examples.appendChild(button);
+});
+
+document.getElementById("myth").addEventListener("keydown", event => {
+  if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+    checkMyth();
+  }
+});
+</script>
+</body>
+</html>
